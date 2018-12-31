@@ -1,0 +1,536 @@
+<h4>Test Cases</h4>
+
+<div class="alert alert-success alert-dismissible fade show custom-alert" role="alert" *ngIf="!attachError && submittedAttach">Selected Comment(s) Attached Successfully to Selected Test Case(s)
+
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="attachError = false; submittedAttach = false">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="alert alert-danger alert-dismissible fade show custom-alert" role="alert" *ngIf="attachError">{{attachErrorMsg}}
+
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="attachError = false; submittedAttach = false">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+
+<!--Container that contains the main table-->
+<div class="my-container">
+  <dts-select-container #selectContainer="dts-select-container"
+                        [(selectedItems)]="selectedDocuments"
+                        [selectWithShortcut]="true">
+    <div class="basic-container"  (scroll)="selectContainer.update()">
+        <table class="table table-striped">
+          <tr>
+            <th *ngFor="let col of columnNames; let i=index">
+              <div style="margin-top: 10px; display: inline-block" *ngIf="(!searchMode && col === 'Tests') || col !== 'Tests'">
+                {{col}}
+                <span *ngIf="col != 'Comment' && col != 'DEI' && col != 'Tags' && col != 'Test Owner'"
+                      style="margin-left: 10px; cursor:pointer;"
+                      (click)="changeSortingOrder(i)">{{sortingOrder[i] === undefined || sortingOrder[i] === null? "▼" : sortingOrder[i]}}</span>
+              </div>
+              <img *ngIf="!searchMode && col === 'Tests'" (click)="enableSearchMode()"
+                   src="./assets/images/search.png"
+                   style="width: 25px; float: right; padding-top: 10px">
+              <!--Input for search-->
+              <form *ngIf="searchMode && col === 'Tests'" id="search">
+                <span style="float: right; font-size: large; cursor: pointer; margin-top: 8px; margin-right: 10px"
+                      (click)="disableSearchMode()"
+                      *ngIf="searchMode && col === 'Tests'">×</span>
+                <input type="text" placeholder="Test Name" name="myInput" [(ngModel)]="curInput" (keyup)="applyChange()">
+              </form>
+            </th>
+          </tr>
+          <tr *ngFor="let row of filteredTable; let i = index">
+            <td [contextMenu]="testMenu"
+                [contextMenuSubject]="row['Tests']"
+                (contextmenu)="setTestSelected(row)"
+                [dtsSelectItem]="{'test': row, 'testName': row['Tests']}">
+              {{row["Tests"]}}
+            </td>
+            <td *ngFor="let item of row['Data']; let j=index"
+                [contextMenu]="statusMenu"
+                [contextMenuSubject]="{'index': j, 'cur': item, 'test': row['Tests']}"
+                (contextmenu)="setStatusSelected(row, j)"
+                [dtsSelectItem]="{'status': row, 'testName': row['Tests'], 'id': j}">
+              <span>{{item["exec_state"]}}</span>
+              <span *ngIf="item['fstatus'][0] === '---'"></span>
+              <ul style="margin-left: 15px; margin-bottom: 0" *ngIf="item['fstatus'][0] !== '---'">
+                <li *ngFor="let f_s of item['fstatus']">{{f_s}}</li>
+              </ul>
+            </td>
+            <td [contextMenu]="commentMenu"
+                (contextmenu)="setCommentSelected(row['Tests'])"
+                [contextMenuSubject]="row['Tests']"
+
+                [dtsSelectItem]="{'comment': row['Tests']}">
+              {{ getCommentsNumber(row['Tests']) }}
+            </td>
+            <td id="DEI"
+                [contextMenu]="deiMenu"
+                (contextmenu)="setDEISelected(row['Tests'])"
+                [contextMenuSubject]="row['Tests']"
+                [dtsSelectItem]="{ 'dei': row['Tests'] }">{{ getDEIsNumber(row['Tests']) }}</td>
+            <td id="Tags">---</td>
+            <td id="Severity">---</td>
+          </tr>
+        </table>
+    </div>
+  </dts-select-container>
+</div>
+
+<!-- Context Menu for test name -->
+<context-menu #testMenu >
+  <ng-template contextMenuItem
+               (execute)="showMessage('Hi, ' + $event)"
+               [subMenu]="subTestMenu"
+               let-item>
+    Cur Selected: {{item}}
+  </ng-template>
+  <context-menu #subTestMenu>
+    <span *ngFor="let doc of selectedDocuments; let i = index">
+      <ng-template contextMenuItem
+                   *ngIf="doc.hasOwnProperty('test')===true"
+                   (execute)="showMessage('Hi, ' + $event.item)">
+        Item {{i+1}}: {{doc['testName']}}
+      </ng-template>
+    </span>
+  </context-menu>
+  <ng-template contextMenuItem
+               (execute)="applyColor()">
+    Apply Color (to all selected cells)
+  </ng-template>
+  <ng-template contextMenuItem
+               (execute)="showHistory()">
+    Show History (selected cells)
+  </ng-template>
+  <ng-template contextMenuItem
+               (execute)="copyTestNames()">
+    Copy Test Names (selected cells)
+  </ng-template>
+  <ng-template contextMenuItem
+               (execute)="hideTest()">
+    Hide Test
+  </ng-template>
+  <ng-template contextMenuItem let-item (execute)="showPopUpTableTest(selectedDocuments.length === 0? $event.item : selectedDocuments[0]['testName'])">Show More Info</ng-template>
+</context-menu>
+
+<!--Context menu for status-->
+<context-menu #statusMenu>
+  <!-- Item #1 with its sub-context-menu -->
+  <ng-template contextMenuItem
+               (execute)="showMessage('Hi, ' + $event.item)"
+               [subMenu]="subStatusMenu"
+               let-data>
+    Cur Selected: {{data['cur']['exec_state']}}
+  </ng-template>
+  <ng-template contextMenuItem
+               (execute)="updateTestInstancesModal(update_test)">
+    Update Test Status
+  </ng-template>
+  <ng-template contextMenuItem (execute)="addNewComment(content)">
+    Add New Comment
+  </ng-template>
+  <context-menu #subStatusMenu>
+    <span *ngFor="let doc of selectedDocuments; let i = index">
+      <ng-template contextMenuItem
+                   (execute)="showMessage('Hi, ' + $event.item)"
+                   *ngIf="doc.hasOwnProperty('status')===true"
+                   let-data>
+          Item {{i+1}}: {{doc['status']['Data'][ data['index'] ]['exec_state']}}
+      </ng-template>
+    </span>
+  </context-menu>
+  <!-- Item #2 -->
+  <ng-template contextMenuItem
+               [subMenu]="subColorMenu">
+    Select Color Tag
+  </ng-template>
+  <context-menu #subColorMenu>
+    <ng-template contextMenuItem
+                 (execute)="selectColorTagGreen()">
+          Green
+    </ng-template>
+    <ng-template contextMenuItem
+                 (execute)="selectColorTagYellow()">
+          Yellow
+    </ng-template>
+    <ng-template contextMenuItem
+                 (execute)="selectColorTagRed()">
+          Red
+    </ng-template>
+  </context-menu>
+  <!-- Item #2 -->
+  <ng-template contextMenuItem
+               (execute)="openTestExplorer()">
+    Open Test Explorer
+  </ng-template>
+  <!-- Item #3 -->
+  <ng-template contextMenuItem
+               (execute)="openTestExplorerWindow($event.item['test'])">
+    Open Test Explorer (New Window)
+  </ng-template>
+  <!-- Item #4 -->
+  <ng-template contextMenuItem
+               (execute)="gridJobStatus()">
+    Grid Job Status
+  </ng-template>
+  <!-- Item #5 -->
+  <ng-template contextMenuItem
+               (execute)="viewQLog()">
+    View Qlog
+  </ng-template>
+  <!-- Item #6 -->
+  <ng-template contextMenuItem
+               (execute)="monitorQLog()">
+    Monitor Qlog
+  </ng-template>
+  <!-- Item #7 -->
+  <ng-template contextMenuItem
+               (execute)="killSelectedJobs()">
+    Kill Selected Jobs
+  </ng-template>
+  <!-- Item #8 -->
+  <ng-template contextMenuItem
+               (execute)="runCommandOpenTerminal()">
+    Run Command/Open Terminal
+  </ng-template>
+  <!-- Item #9 -->
+  <ng-template contextMenuItem
+               (execute)="runCommandOpenTerminalQuick()">
+    Run Command/Open Terminal (QUICK)
+  </ng-template>
+  <!-- Item #10 -->
+  <ng-template contextMenuItem
+               (execute)="copyFailReasonsToTags()">
+    Copy Fail Reasons to Tags
+  </ng-template>
+  <!-- Item #11 -->
+  <ng-template contextMenuItem
+               (execute)="openClickBuild()">
+    Open Click Build
+  </ng-template>
+  <!-- Item #12 -->
+  <ng-template contextMenuItem
+               (execute)="openVNC()">
+    Open VNC
+  </ng-template>
+  <!-- Item #13 -->
+  <ng-template contextMenuItem
+               (execute)="showPopUpTableStatus(selectedDocuments.length === 0? $event.item['test'] : selectedDocuments[0]['testName'])">Show More Info</ng-template>
+</context-menu>
+
+<!--Context menu for comments-->
+<context-menu #commentMenu>
+  <ng-template contextMenuItem (execute)="showComment()">
+    Show Comments
+  </ng-template>
+  <ng-template contextMenuItem (execute)="attachCommentModal(attach_comment)" [enabled]="!isAttachTestCasesMode_comments && !isAttachTestCasesMode_deis">
+    Attach Comment(s) to Test Case(s)
+  </ng-template>
+</context-menu>
+
+<!--Context menu for DEIs-->
+<context-menu #deiMenu>
+  <ng-template contextMenuItem (execute)="showDEI()">
+    Show DEIs
+  </ng-template>
+  <ng-template contextMenuItem (execute)="attachDEIModal(attach_dei)" [enabled]="!isAttachTestCasesMode_comments && !isAttachTestCasesMode_deis">
+    Attach DEI(s) to Test Case(s)
+  </ng-template>
+</context-menu>
+
+
+
+<!--It's just the dark window that appears behind the pop up table-->
+<div id="whole-window"
+     *ngIf="isSubTableVisible || isShowCommentsMode || isShowDEIsMode"
+     (click)="hideAllPopUps()"></div>
+<!--------------------------------------------------------------------------------------------------->
+<div class="small-container" *ngIf="isSubTableVisible">
+  <div class="controls">
+    <h2>More Information</h2>
+    <span (click)="hideAllPopUps()">×</span>
+  </div>
+  <div  style="margin-top: 70px">
+    <ngb-tabset>
+      <ngb-tab *ngFor="let cur_tab of tabs">
+        <ng-template ngbTabTitle ><span title="{{cur_tab['testName']}}">{{cur_tab.val}}</span></ng-template>
+        <ng-template ngbTabContent>
+          <table style="background-color:#fff;" class="table table-striped">
+            <tr *ngFor="let col of allColumnData">
+              <th> {{col}} </th>
+              <td [innerHTML]="displayContent(allTableData[ cur_tab['testName'] ][cur_tab.j][col])">
+              </td>
+            </tr>
+          </table>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+</div>
+
+<!-- Creating Comment Modal -->
+<ng-template #content let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title" id="modal-basic-title">
+      Adding New Comment
+      <span *ngIf="loading">
+        <img style="max-width: 50px" src="./assets/images/loader.gif" alt="">
+      </span>
+    </h5>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form action="#">
+      <div class="form-group">
+        <div class="alert alert-danger" *ngIf="showError">{{errorResult}}</div>
+        <label for="username">Username</label>
+        <div class="input-group">
+          <input type="text" placeholder="type username.." #user_val id="username" class="username-input" required>
+        </div>
+        <label for="comment-content">Type Your Comment</label>
+        <div class="input-group">
+          <textarea id="comment-content" #txt_val class="form-control" placeholder="type your comment here.." required></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-dark" (click)="commentSubmission(modal, txt_val.value, user_val.value)">Save</button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+
+<!--Comment Small Table; shows test_case_comments for test case(s)-->
+<div id="comment-table" class="small-container" *ngIf="isShowCommentsMode">
+  <div class="controls">
+    <h2>Comment Info</h2>
+    <span (click)="hideAllPopUps()">×</span>
+  </div>
+  <div  style="margin-top: 70px">
+    <ngb-tabset>
+      <ngb-tab *ngFor="let cur_tab of objectKeys(shownComments)">
+        <ng-template ngbTabTitle ><span title="">Test Case #{{cur_tab}}</span></ng-template>
+        <ng-template ngbTabContent>
+          <span style="margin: 20px" *ngIf="objectKeys(shownComments[cur_tab]).length === 0"> There's no comments for this test case.</span>
+          <div *ngFor="let cur_status of objectKeys(shownComments[cur_tab])">
+            <div style="margin: 15px 10px 10px 10px;">Status #{{cur_status}}</div>
+            <span style="margin: 20px" *ngIf="shownComments[cur_tab][cur_status].length === 0"> There's no comments for this status.</span>
+            <div class="card" style="width: 48%; margin: 10px; display: inline-block"  *ngFor="let cur_comment of objectKeys(shownComments[cur_tab][cur_status])">
+              <div class="card-header">Comment #{{cur_comment}}
+                <!--Update Button-->
+                <button style="margin-top: -7px; padding: 5px;"
+                        class="pull-right btn btn-info"
+                        *ngIf="commentOperation[cur_tab][cur_status][cur_comment] !== 'loadingDelete'"
+                        (click)="updateCommentMode(cur_tab, cur_status, cur_comment)">
+                  <span *ngIf="commentOperation[cur_tab][cur_status][cur_comment] === 'submit'">Submit Changes</span>
+                  <img *ngIf="commentOperation[cur_tab][cur_status][cur_comment] === 'normal'" src="./assets/images/edit.svg" alt="" style="width: 25px">
+                  <i *ngIf="commentOperation[cur_tab][cur_status][cur_comment] === 'loadingUpdate'" class="fa fa-spinner fa-pulse fa-fw" style="font-size: 1.6em"></i>
+                </button>
+                <!--Delete Button-->
+                <button *ngIf="commentOperation[cur_tab][cur_status][cur_comment] !== 'submit' && commentOperation[cur_tab][cur_status][cur_comment] !== 'loadingUpdate'"
+                        style="margin-right: 10px; margin-top: -7px; padding: 5px"
+                        class="pull-right btn btn-danger"
+                        (click)="openDeleteCommentOrDEIModal(delete_comment_or_dei_modal, cur_tab, cur_status, cur_comment)">
+                  <i *ngIf="commentOperation[cur_tab][cur_status][cur_comment] === 'loadingDelete'"
+                     class="fa fa-spinner fa-pulse fa-fw"
+                     style="font-size: 1.6em"></i>
+                  <img *ngIf="commentOperation[cur_tab][cur_status][cur_comment] !== 'loadingDelete'" src="./assets/images/delete.svg" alt="" style="width: 25px">
+                </button>
+              </div>
+              <div class="card-body">
+                <div class="alert alert-danger" *ngIf="showCommentErrors[cur_tab][cur_status][cur_comment] === true">{{errorCommentMsg}}</div>
+                <table style="background-color:#fff;" class="table table-striped">
+                  <tr *ngFor="let col of objectKeys(shownComments[cur_tab][cur_status][cur_comment])">
+                    <th class="card-title"> {{col}} </th>
+                    <td>
+                      <span *ngIf="showInputs[cur_tab][cur_status][cur_comment] === false || col !== 'content'">{{shownComments[cur_tab][cur_status][cur_comment][col]}}</span>
+                      <input type="text" [(ngModel)]="shownComments[cur_tab][cur_status][cur_comment][col]" name="{{cur_tab}}_{{cur_status}}_{{cur_comment}}" class="content-comment"
+                             *ngIf="showInputs[cur_tab][cur_status][cur_comment] === true && col === 'content'">
+                    </td>
+
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+</div>
+
+<!--Select Comments to Attach Modal-->
+<ng-template #attach_comment let-modalComm>
+  <div class="modal-header" >
+    <h5 class="modal-title" id="modalComm-basic-title">
+      Choose Comments to Attach
+    </h5>
+    <button type="button" class="close" aria-label="Close" (click)="modalComm.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+
+    <label for="att-username">Username</label>
+    <div class="input-group">
+      <input type="text" placeholder="type username.." #att_user_val id="att-username" class="username-input" required>
+    </div>
+    <section class="attach-section">
+      <mat-checkbox class="attach-margin" *ngFor="let selected of objectKeys(attachComments)" [(ngModel)]="checkedComments[selected]">{{attachComments[selected]['content']}}</mat-checkbox>
+    </section>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline-dark" (click)="attachCommentSubmission(modalComm, att_user_val.value)">Submit Comments</button>
+  </div>
+</ng-template>
+
+<!--Attach Comment or DEI Buttons-->
+<div *ngIf="isAttachTestCasesMode_comments || isAttachTestCasesMode_deis">
+  <button class="btn btn-dark fixed-bottom-right" (click)="sendAttachedTestCases(isAttachTestCasesMode_comments)">Attach to Selected Test Cases</button> <!-- ture => comment, false => dei -->
+  <button class="btn btn-dark fixed-bottom-left" (click)="isAttachTestCasesMode_comments = false; isAttachTestCasesMode_deis = false; deselectAll()">Cancel Operation</button>
+</div>
+<div *ngIf="isLoadingAttach">
+  <span class="btn btn-dark fixed-bottom-right">
+    Loading <img style="max-width: 50px" src="./assets/images/loader.gif" alt="">
+  </span>
+</div>
+
+<!-- Deleting Comment Modal -->
+<ng-template #delete_comment_or_dei_modal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title" id="modalDel-basic-title">
+      Deleting {{isShowDEIsMode? 'DEI' : 'Comment'}}
+      <span *ngIf="loading">
+        <img style="max-width: 50px" src="./assets/images/loader.gif" alt="">
+      </span>
+    </h5>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <div class="alert alert-danger" *ngIf="showError">{{errorResult}}</div>
+      <label for="del-username">Username</label>
+      <div class="input-group">
+        <input type="text" placeholder="type username.." #del_user_val id="del-username" class="username-input" required>
+      </div>
+      <div class="radio">
+        <mat-radio-group class="del-radio-group" name="del-radio" [(ngModel)]="del_option">
+          <mat-radio-button class="del-radio-button" [value]="1">
+            Delete for this test case only
+          </mat-radio-button>
+          <mat-radio-button class="del-radio-button" [value]="2">
+            Delete for all test cases
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-dark" (click)="modal.close(del_user_val.value)">Save</button>
+    </div>
+  </div>
+</ng-template>
+
+<!--DEIs popup just to show them-->
+<div class="small-container" *ngIf="isShowDEIsMode">
+  <div class="controls">
+    <h2>DEI Info</h2>
+    <span (click)="hideAllPopUps()">×</span>
+  </div>
+  <div  style="margin-top: 70px">
+    <ngb-tabset>
+      <ngb-tab *ngFor="let cur_tab of objectKeys(shownDEIs)">
+        <ng-template ngbTabTitle ><span title="">Test Case #{{cur_tab}}</span></ng-template>
+        <ng-template ngbTabContent>
+          <span style="margin: 20px" *ngIf="objectKeys(shownDEIs[cur_tab]).length === 0"> There's no DEIs for this test case.</span>
+            <div class="alert alert-danger" style="margin: 20px;" *ngIf="showDEIErrors[cur_tab] === true">{{errorDEIMsg}}</div>
+            <div *ngFor="let cur_status of objectKeys(shownDEIs[cur_tab])">
+              <span style="margin: 20px" *ngIf="shownDEIs[cur_tab][cur_status].length === 0"> There's no DEIs for this test case.</span>
+              <ul class="list-group custom-list">
+                <div>Status #{{cur_status}}</div>
+                <li class="list-group-item" *ngFor="let cur_DEI of objectKeys(shownDEIs[cur_tab][cur_status])">
+                  {{shownDEIs[cur_tab][cur_status][cur_DEI]}}
+                  <button style="margin-right: 10px; padding: 5px"
+                          class="pull-right btn btn-danger"
+                          (click)="openDeleteCommentOrDEIModal(delete_comment_or_dei_modal, cur_tab, cur_status, cur_DEI)">
+                    <i *ngIf="DEIOperation[cur_tab][cur_status][cur_DEI] === 'loadingDEIDelete'"
+                       class="fa fa-spinner fa-pulse fa-fw"
+                       style="font-size: 1.6em"></i>
+                    <img *ngIf="DEIOperation[cur_tab][cur_status][cur_DEI] !== 'loadingDEIDelete'" src="./assets/images/delete.svg" alt="" style="width: 25px">
+                  </button>
+                </li>
+              </ul>
+            </div>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+</div>
+
+<!-- Creating DEI Modal -->
+<ng-template #attach_dei let-modalDEI>
+  <div class="modal-header" >
+    <h5 class="modal-title" id="modalDEI-basic-title">
+      Choose DEIs to Attach
+    </h5>
+    <button type="button" class="close" aria-label="Close" (click)="modalDEI.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+
+    <label for="att-dei-username">Username</label>
+    <div class="input-group">
+      <input type="text" placeholder="type username.." #att_dei_user_val id="att-dei-username" class="username-input" required>
+    </div>
+    <section class="attach-section">
+      <mat-checkbox class="attach-margin" *ngFor="let selected of objectKeys(attachDEIs)" [(ngModel)]="checkedDEIs[selected]">{{attachDEIs[selected]}}</mat-checkbox>
+    </section>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline-dark" (click)="attachDEISubmission(modalDEI, att_dei_user_val.value)">Submit DEIs</button>
+  </div>
+</ng-template>
+
+<!-- Update Test Instance Modal -->
+<ng-template #update_test let-modalUpdateTest>
+  <div class="modal-header" >
+    <h5 class="modal-title" id="modalUpdateTest-basic-title">
+      Update Selected Test Instances
+      <span *ngIf="updateTestsloading">
+        <img style="max-width: 50px" src="./assets/images/loader.gif" alt="">
+      </span>
+    </h5>
+    <button type="button" class="close" aria-label="Close" (click)="modalUpdateTest.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="alert alert-danger" *ngIf="showError">{{errorResult}}</div>
+    <form class="upd-test-form">
+      <mat-form-field class="full-width" *ngFor="let inp of inputs_upd_tests">
+        <input matInput placeholder="{{inp['key']}}" name="{{inp['key']}}" [(ngModel)]="inp['val']"> <br><br>
+      </mat-form-field>
+
+      <mat-radio-group name="upd-test-radio-status" [(ngModel)]="ev_status_option">
+        <label>Evaluation Status</label><br>
+        <mat-radio-button class="upd-test-radio-button" *ngFor="let ev_status_item of radio_upd_tests_ev_status" [value]="ev_status_item">
+          {{ev_status_item}}
+        </mat-radio-button>
+      </mat-radio-group>
+      <br><br>
+      <mat-radio-group name="upd-test-radio-res" [(ngModel)]="ev_res_option">
+        <label>Evaluation Result</label><br>
+        <mat-radio-button class="upd-test-radio-button" *ngFor="let ev_res_item of radio_upd_tests_ev_res" [value]="ev_res_item">
+          {{ev_res_item}}
+        </mat-radio-button>
+      </mat-radio-group>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline-dark" (click)="sendUpdatedTestInstances(modalUpdateTest); ">Update Test Instances</button>
+  </div>
+</ng-template>

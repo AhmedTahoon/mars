@@ -1,0 +1,50 @@
+<dts-select-container #container="dts-select-container"
+                      [(selectedItems)]="selectedIDs"
+                      [selectWithShortcut]="true">
+  <div class="my-container"
+      (click)="hideAllPopUps()">
+    <div class="basic-container">
+      <table class="table table-striped">
+        <tr>
+          <th *ngFor="let col of columnNames | filterTable: columnVisibility"> {{col}} </th>
+        </tr>
+        <tr *ngFor="let row of tableData | filterRow: columnsToFilterByRowVisibility"
+            [dtsSelectItem]="row['id']"
+            [contextMenu]="tableMenu"
+            [contextMenuSubject]="row['id']"
+            (contextmenu)="selectRow(row['id'])">
+          <td *ngFor="let col of columnNames | filterTable: columnVisibility"> {{row[col]}} </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</dts-select-container>
+<div id="whole-window"
+     *ngIf="isSubTableVisible"
+     (click)="hideAllPopUps()"></div>
+
+<context-menu #tableMenu>
+  <ng-template contextMenuItem
+               (execute)="openSmallTable($event.item)"
+               let-data>
+    Open Test Cases for this Submissions
+  </ng-template>
+  <ng-template contextMenuItem
+               (execute)="showPopUpTable()"
+               let-data>
+    Show Environment Table
+  </ng-template>
+</context-menu>
+
+<div class="small-container" *ngIf="isSubTableVisible">
+  <div id="controls">
+    <h2>Environment</h2>
+    <span (click)="hideAllPopUps()">×</span>
+  </div>
+  <table style="margin-top: 70px" class="table table-striped">
+    <tr *ngFor="let col of environmentColumnNames">
+      <th> {{col}} </th>
+      <td [innerHTML]="displayContent(environmentTableData[col])">  </td>
+    </tr>
+  </table>
+</div>

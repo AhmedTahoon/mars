@@ -1,0 +1,29 @@
+<!--The home page contains three main components: NAV BAR, SIDE BAR and MAIN CONTENT which's the table-->
+
+<app-nav-bar [hasBurgerButton]="true"
+             (sideMenuIsVisible)="isSideMenuVisible = !isSideMenuVisible; scrollDown1PX()"></app-nav-bar>
+<div style="text-align: center; width: 100px; position: fixed; left: 45%; top: 45%;" *ngIf="gettingData === true">
+  <img style="max-width: 100%" src="./assets/images/spinner.gif" alt="">
+</div>
+<div id="vertical-alignment">
+  <div id="sidebar" [hidden]="!isSideMenuVisible">
+    <app-sm-filter-table style="position: fixed; left: 0; width: 19%;" [columnFilterMap]="columnsToFilterMap"
+                         [columnFilterVisibility]="columnsToFilterVisibility"
+                         (filterMe)="onFiltering()"
+                         *ngIf="gettingData === false && objectKey(myTableData).length !== 0"></app-sm-filter-table>
+  </div>
+  <div id="main-content">
+    <app-sm-table-params (tableParam)="updateTable($event)"></app-sm-table-params>
+    <app-submissions-table [submissionData]="submissionsData"
+                           *ngIf="gettingData === false && objectKey(myTableData).length !== 0"></app-submissions-table>
+    <app-sm-table [tableData]="myTableData"
+                  [columnNames]="columnNames"
+                  [allTableData]="allTableData"
+                  [allColumnData]="allColumnData"
+                  [rowVisibility]="columnsToFilterVisibility"
+                  [test_case_comments]="test_case_comments"
+                  [comment_test_cases]="comment_test_cases"
+                  [test_case_DEIs]="test_case_DEIs"
+                  *ngIf="gettingData === false && objectKey(myTableData).length !== 0"></app-sm-table>
+  </div>
+</div>

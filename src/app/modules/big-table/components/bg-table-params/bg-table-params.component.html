@@ -1,0 +1,5 @@
+<div>
+  <label for="box">Query</label><br>
+  <input id="box" type="text" name="my-box" [(ngModel)]="query"
+         placeholder="Enter Query" (keyup.enter)="tellParentNewParams($event)">
+</div>

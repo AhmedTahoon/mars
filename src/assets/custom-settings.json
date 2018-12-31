@@ -1,0 +1,57 @@
+[
+  {
+    "col_name": "name",
+    "index": 0,
+    "visibility": true
+  },
+  {
+    "col_name": "exec_flow",
+    "index": 0,
+    "visibility": true
+  },
+  {
+    "col_name": "TOTAL",
+    "index": 1,
+    "visibility": true
+  },
+    {
+    "col_name": "PASSED",
+    "index": 2,
+    "visibility": true
+  },
+  {
+    "col_name": "ALL_PASSED",
+    "index": 3,
+    "visibility": false
+  },
+  {
+    "col_name": "FAILED",
+    "index": 4,
+    "visibility": true
+  },
+  {
+    "col_name": "ALL_FAILED",
+    "index": 5,
+    "visibility": false
+  },
+  {
+    "col_name": "QUEUED",
+    "index": 6,
+    "visibility": true
+  },
+  {
+    "col_name": "RUNNING",
+    "index": 7,
+    "visibility": true
+  },
+  {
+    "col_name": "OTHER",
+    "index": 8,
+    "visibility": true
+  },
+  {
+    "col_name": "status",
+    "index": 9,
+    "visibility": true
+  }
+]

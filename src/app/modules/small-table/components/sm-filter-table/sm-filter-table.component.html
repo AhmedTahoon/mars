@@ -1,0 +1,18 @@
+<div id="sidebar-content">
+  <div class="container"
+       [ngStyle]="{'max-height': windowHeight+'px'}">
+    <details *ngFor="let col_name of objectKeys(columnFilterMap)">
+      <summary>Filter by {{col_name}}</summary>
+      <span class="select-all" (click)="selectAll(col_name)">{{ toggleSelectAll[col_name]===undefined||toggleSelectAll[col_name]===null? toggleSelectAll[col_name]="Deselect All": toggleSelectAll[col_name] }}</span>
+      <ul class="cell">
+        <li *ngFor="let col of objectKeys(columnFilterMap[col_name])">
+          <label [for]="col_name+col"
+                 style="width: 69%; display: inline-block" >{{col}}<i style="padding-left: 10px; font-size: small">({{columnFilterMap[col_name][col]}})</i>
+          </label>
+          <input [id]="col_name+col" type="checkbox" [checked]="columnFilterVisibility[col_name][col]" (change)="tellTheParentColumnChanges(col, col_name)">
+          <label [for]="col_name+col"> </label>
+        </li>
+      </ul>
+    </details>
+  </div>
+</div>

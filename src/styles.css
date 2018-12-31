@@ -1,0 +1,48 @@
+/* You can add global styles to this file, and also import other style files */
+@import '~@angular/material/prebuilt-themes/deeppurple-amber.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  overflow: auto;
+  font-family: 'Roboto Condensed', sans-serif;
+  min-height: 101%;
+
+}
+table {
+  border-collapse: inherit !important;
+}
+context-menu-content .ngx-contextmenu .dropdown-menu {
+  border-radius: 5px;
+  background-color: #fafafa;
+  box-shadow: 0 5px 5px -3px rgba(0,0,0,.2), 0 8px 10px 1px rgba(0,0,0,.14), 0 3px 14px 2px rgba(0,0,0,.12);
+  min-width: 200px;
+}
+context-menu-content .ngx-contextmenu li {
+  display: block;
+  border-top: solid 1px #dedede;
+  padding: 2px 0;
+}
+context-menu-content .ngx-contextmenu li:first-child {
+  border-top:none;
+}
+context-menu-content .ngx-contextmenu a {
+  color: #19233E;
+  display: block;
+  padding: 0.1em 0.5em;
+  text-decoration: none;
+}
+context-menu-content .ngx-contextmenu a:hover {
+  background-color: lightgray;
+}
+.hasSubMenu[_ngcontent-c9]:before, .hasSubMenu[_ngcontent-c11]:before {
+  padding-left: 5px;
+  content: "⮞" !important;
+}
+#sidebar,#sidebar-content {
+background:lightgray;
+
+}

@@ -1,0 +1,16 @@
+input {
+  border-radius:10px;
+  height: 40px;
+  padding:10px;
+  margin-left:3px;
+  vertical-align: middle;
+}
+button {
+  border-radius:10px;
+  margin-left:3px;
+  height: 40px;
+}
+div.login {
+  color:white;
+  font-weight:bold;
+}

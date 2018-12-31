@@ -1,0 +1,227 @@
+table {
+  width: 100%;
+  text-align: left;
+  font-size: small;
+}
+
+td, th {
+  padding: 5px 10px;
+  /*text-align: center;*/
+  border-bottom: 1px solid #dddddd;
+  min-width: 100px;
+
+  /* These are technically the same, but use both */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  /* Instead use this non-standard one: */
+  word-break: break-word;
+
+  /* Adds a hyphen where the word breaks, if supported (No Blink) */
+  -ms-hyphens: auto;
+  -moz-hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+tr, td, th {
+  border: 0;
+}
+
+.basic-container {
+  /*width: 95%;*/
+  margin: auto;
+  background-color: #fafafa;
+  color: rgba(0,0,0,.87);
+  box-shadow: 0 5px 5px -3px rgba(0,0,0,.2), 0 8px 10px 1px rgba(0,0,0,.14), 0 3px 14px 2px rgba(0,0,0,.12);
+  overflow: auto;
+}
+.my-container {
+  padding: 10px 20px 10px 20px;
+  overflow: auto;
+}
+#search input {
+  border-radius: 10px;
+  padding: 5px 10px;
+  background-color: #fafafa;
+  border: 1px lightgray solid;
+  outline: none;
+  margin-top: 5px;
+}
+.username-input {
+  border-radius: 5px;
+  border: 1px lightgray solid;
+  margin-bottom: 15px;
+  padding: 5px 10px;
+}
+#auto-complete-body {
+  position: absolute;
+  top: 80px;
+  left: 3.7%;
+  background-color: #fafafa;
+  max-height: 300px;
+  overflow: auto;
+  box-shadow: 0 5px 5px -3px rgba(0,0,0,.2), 0 8px 10px 1px rgba(0,0,0,.14), 0 3px 14px 2px rgba(0,0,0,.12);
+}
+#auto-complete-body ul {
+  list-style: none;
+}
+#auto-complete-body ul li {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+h4 {
+  font-size: large;
+  font-weight: 500;
+  margin: 10px 0 20px 20px;
+}
+
+/******************************************/
+
+.small-container {
+  background-color: #ffffff;
+  color: rgba(0,0,0,.87);
+  box-shadow: 0 5px 5px -3px rgba(0,0,0,.2), 0 8px 10px 1px rgba(0,0,0,.14), 0 3px 14px 2px rgba(0,0,0,.12);
+  position: fixed;
+  left: 10%;
+  width: 80%;
+  max-height: 80%;
+  min-height: 50%;
+  top: 10%;
+  overflow: auto;
+  z-index: 1;
+  border-radius: 5px;
+}
+.small-container .controls {
+  background-color: #FAFAFA;
+  color: #19233E;
+  padding: 10px 25px;
+  display: flex;
+  align-items: center;
+  position: fixed;
+  left: 10%;
+  width: 80%;
+  z-index: 1;
+}
+.small-container .controls h2 {
+  flex: 50;
+}
+.small-container .controls span {
+  font-size: x-large;
+  cursor: pointer;
+  flex: 1;
+}
+.pagination {
+  position: fixed;
+  background-color: #dedede;
+  left: 10%;
+  top: 115px;
+  border-bottom: 1px solid #19233E;
+  width: 80%;
+}
+.pagination .item {
+  color: #333;
+  display: inline-block;
+  padding: 10px 50px;
+  cursor: pointer;
+}
+.pagination .active-tab {
+  background-color: #19233E;
+  color: #dddddd;
+  box-shadow: 5px -5px 5px -3px rgba(0,0,0,.2), 5px -1px 10px 1px rgba(0, 0, 0, 0.22), 5px -5px 14px 2px rgba(0, 0, 0, 0);
+}
+.pagination .item:not(.active-tab):hover {
+  background-color: #9c9c9c;
+  color: #eeeeee;
+}
+#whole-window {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/******************************************/
+#select-rectangle {
+  position: fixed;
+  background-color: rgba(0, 0, 255, 0.2);
+}
+
+.content-comment {
+  width: 100%;
+  border-radius: 5px;
+  border: solid #ddd 1px;
+  padding: 5px;
+}
+.fixed-bottom-right {
+  position: fixed;
+  right: 30px;
+  bottom: 30px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+.fixed-bottom-left {
+  position: fixed;
+  left: 30px;
+  bottom: 30px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+.custom-alert {
+  position: fixed;
+  top: 80px;
+  right: 1%;
+  width: 30%;
+  z-index: 1051;
+}
+/* Attach Modal */
+
+.attach-section {
+  /*height: 60px;*/
+}
+
+.attach-margin {
+  margin: 0 10px;
+  display: block;
+}
+
+/* Delete Modal */
+.del-radio-group {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.del-radio-button {
+  margin: 5px;
+}
+
+.del-selected-value {
+  margin: 15px 0;
+}
+
+.custom-list {
+  width: 95%;
+  margin: 20px auto;
+}
+/* Update Test Instance */
+.upd-test-form {
+  min-width: 150px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.full-width {
+  width: 80%;
+}
+
+.upd-test-radio-button {
+  margin: 5px;
+  width: 40%;
+}
+
+tr.selected, td.selected{
+  background: black!important;
+  color:white!important;
+  border: 0px solid #d2d2d2!important;
+}

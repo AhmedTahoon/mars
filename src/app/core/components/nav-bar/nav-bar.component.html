@@ -1,0 +1,10 @@
+
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark justify-content-end">
+    <div class="nav-img"
+    *ngIf="hasBurgerButton"
+    (click)="hideSideMenu()">
+    <img src='./assets/images/menu-burger.svg'>
+    </div>
+    <a class="navbar-brand" href="#">Regweb 2.0 (MARS Explorer)</a>
+    <app-login-form class='ml-auto'></app-login-form>
+</nav>

@@ -1,0 +1,13 @@
+#vertical-alignment {
+  display: flex;
+  //margin-top: 80px;
+}
+
+#main-content {
+  overflow: auto;
+  flex: 9;
+}
+
+#sidebar {
+  flex: 2;
+}

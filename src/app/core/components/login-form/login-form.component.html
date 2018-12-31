@@ -1,0 +1,14 @@
+
+<div class='login' *ngIf="!isLoggedIn">
+  <form #companyForm="ngForm" (ngSubmit)="onSubmit(this);">
+    <input size="5" placeholder="username" name="username" [(ngModel)]="params.username" >
+    <input size="5" placeholder="password" type="password" name="password" [(ngModel)]="params.password" >
+    <button type="submit" class="btn btn-success">Login</button>
+  </form>
+</div>
+<div  class='login'  *ngIf="isLoggedIn">
+    <span> Logged in ( {{params.username}} )</span>
+    <button (click)="logout()" class="btn btn-success">Logout</button>
+</div>
+
+
